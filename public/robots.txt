@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://shionix.vercel.app/sitemap.xml
