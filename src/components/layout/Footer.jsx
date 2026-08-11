@@ -44,7 +44,7 @@ export default function Footer() {
             <h4 className="font-display font-bold text-sm uppercase tracking-wider mb-4">Contact Us</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3"><Mail size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href="mailto:support@shionix.in" className="text-sm text-[var(--text3)] hover:text-brand-500">support@shionix.in</a></li>
-              <li className="flex items-start gap-3"><Phone size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--text3)] hover:text-brand-500">+91 98765 43210</a></li>
+              <li className="flex items-start gap-3"><Phone size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--text3)] hover:text-brand-500">+91 84690 15674</a></li>
               <li className="flex items-start gap-3"><MapPin size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><span className="text-sm text-[var(--text3)]">Bangalore, Karnataka, India</span></li>
             </ul>
           </div>
