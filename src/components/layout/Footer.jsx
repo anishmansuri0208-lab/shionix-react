@@ -1,6 +1,19 @@
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react'
-import { INSTAGRAM_URL, WHATSAPP_NUMBER } from '@/utils/constants'
+
+const WHATSAPP_NUMBER = '918469015674'
+const INSTAGRAM_URL   = 'https://instagram.com/shionix'
+
+const QUICK_LINKS = [
+  { to:'/', label:'Home' }, { to:'/shop', label:'Shop' },
+  { to:'/categories', label:'Categories' }, { to:'/about', label:'About Us' },
+  { to:'/contact', label:'Contact' },
+]
+const CUSTOMER_CARE = [
+  { to:'/orders', label:'Track Order' }, { to:'/profile', label:'My Account' },
+  { to:'/contact', label:'Support' }, { to:'/privacy-policy', label:'Privacy Policy' },
+  { to:'/terms', label:'Terms & Conditions' },
+]
 
 export default function Footer() {
   return (
@@ -27,16 +40,16 @@ export default function Footer() {
           <div>
             <h4 className="font-display font-bold text-sm uppercase tracking-wider mb-4">Quick Links</h4>
             <ul className="space-y-2.5">
-              {[['/', 'Home'],['/shop','Shop'],['/categories','Categories'],['/about','About Us'],['/contact','Contact']].map(([to,label])=>(
-                <li key={to}><Link to={to} className="text-sm text-[var(--text3)] hover:text-brand-500 transition-colors">{label}</Link></li>
+              {QUICK_LINKS.map(l=>(
+                <li key={l.to}><Link to={l.to} className="text-sm text-[var(--text3)] hover:text-brand-500 transition-colors">{l.label}</Link></li>
               ))}
             </ul>
           </div>
           <div>
             <h4 className="font-display font-bold text-sm uppercase tracking-wider mb-4">Customer Care</h4>
             <ul className="space-y-2.5">
-              {[['/orders','Track Order'],['/profile','My Account'],['/contact','Support'],['/privacy-policy','Privacy Policy'],['/terms','Terms & Conditions']].map(([to,label])=>(
-                <li key={to}><Link to={to} className="text-sm text-[var(--text3)] hover:text-brand-500 transition-colors">{label}</Link></li>
+              {CUSTOMER_CARE.map(l=>(
+                <li key={l.to}><Link to={l.to} className="text-sm text-[var(--text3)] hover:text-brand-500 transition-colors">{l.label}</Link></li>
               ))}
             </ul>
           </div>
@@ -44,7 +57,7 @@ export default function Footer() {
             <h4 className="font-display font-bold text-sm uppercase tracking-wider mb-4">Contact Us</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3"><Mail size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href="mailto:support@shionix.in" className="text-sm text-[var(--text3)] hover:text-brand-500">support@shionix.in</a></li>
-              <li className="flex items-start gap-3"><Phone size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--text3)] hover:text-brand-500">+91 84690 15674</a></li>
+              <li className="flex items-start gap-3"><Phone size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--text3)] hover:text-brand-500">+91 8469015674</a></li>
               <li className="flex items-start gap-3"><MapPin size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/><span className="text-sm text-[var(--text3)]">Bangalore, Karnataka, India</span></li>
             </ul>
           </div>
