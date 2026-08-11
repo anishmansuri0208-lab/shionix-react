@@ -1,6 +1,6 @@
 export const FREE_SHIPPING_ABOVE = 999
 export const SHIPPING_CHARGE     = 79
-export const WHATSAPP_NUMBER     = '919876543210'
+export const WHATSAPP_NUMBER     = '918469015674'
 export const INSTAGRAM_URL       = 'https://instagram.com/shionix'
 export const SORT_OPTIONS = [
   { value:'new', label:'Newest First' },
