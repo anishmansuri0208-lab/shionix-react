@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import { MessageCircle, ChevronUp } from 'lucide-react'
-import { WHATSAPP_NUMBER } from '@/utils/constants'
+
+const WHATSAPP_NUMBER = '918469015674'
 
 export default function MainLayout() {
   const { pathname } = useLocation()
@@ -19,13 +20,15 @@ export default function MainLayout() {
       <Navbar/>
       <main className="flex-1 pt-16"><Outlet/></main>
       <Footer/>
-      <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Shionix!%20I%20need%20help.`} target="_blank" rel="noopener noreferrer"
-        className="fixed bottom-6 left-6 z-40 w-13 h-13 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full p-3 flex items-center justify-center shadow-lg hover:-translate-y-0.5 transition-all" aria-label="WhatsApp">
+      <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Shionix!%20I%20need%20help.`}
+        target="_blank" rel="noopener noreferrer"
+        className="fixed bottom-6 left-6 z-40 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full p-3 flex items-center justify-center shadow-lg hover:-translate-y-0.5 transition-all"
+        aria-label="WhatsApp">
         <MessageCircle size={24}/>
       </a>
       {showTop && (
         <button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}
-          className="fixed bottom-6 right-6 z-40 w-11 h-11 bg-brand-500 hover:bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-lg transition-colors" aria-label="Back to top">
+          className="fixed bottom-6 right-6 z-40 w-11 h-11 bg-brand-500 hover:bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-lg transition-colors">
           <ChevronUp size={20}/>
         </button>
       )}
