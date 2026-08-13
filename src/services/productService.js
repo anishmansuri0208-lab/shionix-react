@@ -18,94 +18,55 @@ export const productService = {
 
   async getById(id) {
     const { data, error } = await supabase
-      .from('products')
-      .select('*, categories(name,slug)')
-      .eq('id', id)
-      .single()
+      .from('products').select('*, categories(name,slug)').eq('id', id).single()
     if (error) throw error
     return data
   },
 
   async getFeatured(limit=8) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, categories(name,slug)')
-      .eq('status','active')
-      .eq('featured',true)
-      .limit(limit)
+    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('featured',true).limit(limit)
     return data||[]
   },
 
   async getBestSellers(limit=8) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, categories(name,slug)')
-      .eq('status','active')
-      .eq('best_seller',true)
-      .limit(limit)
+    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('best_seller',true).limit(limit)
     return data||[]
   },
 
   async getNewArrivals(limit=8) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, categories(name,slug)')
-      .eq('status','active')
-      .eq('new_arrival',true)
-      .order('created_at',{ascending:false})
-      .limit(limit)
+    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('new_arrival',true).order('created_at',{ascending:false}).limit(limit)
     return data||[]
   },
 
   async getRelated(productId, categoryId, limit=4) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, categories(name,slug)')
-      .eq('status','active')
-      .eq('category_id', categoryId)
-      .neq('id', productId)
-      .limit(limit)
+    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('category_id', categoryId).neq('id', productId).limit(limit)
     return data||[]
   },
 
   async search(query, limit=8) {
-    const { data } = await supabase
-      .from('products')
-      .select('id,name,price,images,emoji')
-      .eq('status','active')
-      .ilike('name',`%${query}%`)
-      .limit(limit)
+    const { data } = await supabase.from('products').select('id,name,price,images,emoji').eq('status','active').ilike('name',`%${query}%`).limit(limit)
     return data||[]
   },
 
   async create(payload) {
-    const { data, error } = await supabase
-      .from('products')
-      .insert([payload])
-      .select()
-      .single()
+    // Remove id and joined fields before insert
+    const { id, categories, category_slug, ...cleanPayload } = payload
+    const { data, error } = await supabase.from('products').insert([cleanPayload]).select().single()
     if (error) throw error
     return data
   },
 
   async update(id, payload) {
-    // Remove categories field if present (it's a joined field, not a column)
-    const { categories, ...cleanPayload } = payload
+    // Remove id, joined fields, and generated columns before update
+    const { id: _id, categories, category_slug, ...cleanPayload } = payload
     const { data, error } = await supabase
-      .from('products')
-      .update(cleanPayload)
-      .eq('id', id)
-      .select()
-      .single()
+      .from('products').update(cleanPayload).eq('id', id).select().single()
     if (error) throw error
     return data
   },
 
   async delete(id) {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
   },
 }
