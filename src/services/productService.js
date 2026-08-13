@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 export const productService = {
   async getAll({ category, search, sort, maxPrice, featured, limit=20, offset=0 }={}) {
-    let q = supabase.from('products').select('*, categories(name,slug)', { count:'exact' }).eq('status','active')
+    let q = supabase.from('products').select('*, categories!category_id(name,slug)', { count:'exact' }).eq('status','active')
     if (search)   q = q.ilike('name', `%${search}%`)
     if (featured) q = q.eq('featured', true)
     if (maxPrice) q = q.lte('price', maxPrice)
@@ -14,24 +14,24 @@ export const productService = {
     return { data: data||[], count: count||0 }
   },
   async getById(id) {
-    const { data, error } = await supabase.from('products').select('*, categories(name,slug)').eq('id',id).single()
+    const { data, error } = await supabase.from('products').select('*, categories!category_id(name,slug)').eq('id',id).single()
     if (error) throw error
     return data
   },
   async getFeatured(limit=8) {
-    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('featured',true).limit(limit)
+    const { data } = await supabase.from('products').select('*, categories!category_id(name,slug)').eq('status','active').eq('featured',true).limit(limit)
     return data||[]
   },
   async getBestSellers(limit=8) {
-    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('best_seller',true).limit(limit)
+    const { data } = await supabase.from('products').select('*, categories!category_id(name,slug)').eq('status','active').eq('best_seller',true).limit(limit)
     return data||[]
   },
   async getNewArrivals(limit=8) {
-    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('new_arrival',true).order('created_at',{ascending:false}).limit(limit)
+    const { data } = await supabase.from('products').select('*, categories!category_id(name,slug)').eq('status','active').eq('new_arrival',true).order('created_at',{ascending:false}).limit(limit)
     return data||[]
   },
   async getRelated(productId, categoryId, limit=4) {
-    const { data } = await supabase.from('products').select('*, categories(name,slug)').eq('status','active').eq('category_id',categoryId).neq('id',productId).limit(limit)
+    const { data } = await supabase.from('products').select('*, categories!category_id(name,slug)').eq('status','active').eq('category_id',categoryId).neq('id',productId).limit(limit)
     return data||[]
   },
   async search(query, limit=8) {
