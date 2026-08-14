@@ -1,14 +1,31 @@
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Input from '@/components/ui/Input'
 import toast from 'react-hot-toast'
 
-const WHATSAPP_NUMBER = '918469015674'
-const PHONE_DISPLAY   = '+91 8469015674'
-
 export default function Contact() {
+  const [settings, setSettings] = useState({})
   const { register, handleSubmit, reset, formState:{ errors, isSubmitting } } = useForm()
+
+  useEffect(() => {
+    supabase.from('settings').select('key,value')
+      .in('key', ['whatsapp','phone','email','address'])
+      .then(({ data }) => {
+        if (data) {
+          const s = {}
+          data.forEach(r => { s[r.key] = r.value })
+          setSettings(s)
+        }
+      })
+  }, [])
+
+  const whatsapp = settings.whatsapp || '919876543210'
+  const phone    = settings.phone    || '+91 98765 43210'
+  const email    = settings.email    || 'support@shionix.in'
+  const address  = settings.address  || 'Bangalore, Karnataka, India'
+
   const onSubmit = async (data) => {
     try {
       await supabase.from('contact_messages').insert([data])
@@ -16,6 +33,7 @@ export default function Contact() {
       reset()
     } catch { toast.error('Failed to send. Try WhatsApp instead.') }
   }
+
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-16">
       <div className="text-center mb-12">
@@ -25,10 +43,10 @@ export default function Contact() {
       <div className="grid md:grid-cols-2 gap-12">
         <div>
           {[
-            { icon:MessageCircle, label:'WhatsApp',  value:PHONE_DISPLAY,       href:`https://wa.me/${WHATSAPP_NUMBER}` },
-            { icon:Mail,          label:'Email',     value:'support@shionix.in', href:'mailto:support@shionix.in' },
-            { icon:Phone,         label:'Phone',     value:PHONE_DISPLAY,        href:`tel:+91${WHATSAPP_NUMBER.slice(2)}` },
-            { icon:MapPin,        label:'Address',   value:'Bangalore, Karnataka, India', href:null },
+            { icon:MessageCircle, label:'WhatsApp', value:phone, href:`https://wa.me/${whatsapp}` },
+            { icon:Mail,  label:'Email',   value:email,   href:`mailto:${email}` },
+            { icon:Phone, label:'Phone',   value:phone,   href:`tel:${phone}` },
+            { icon:MapPin,label:'Address', value:address, href:null },
           ].map(c=>(
             <div key={c.label} className="flex gap-4 mb-6">
               <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
