@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import HeroSection from '@/components/home/HeroSection'
 import MarqueeBanner from '@/components/home/MarqueeBanner'
 import SectionHeader from '@/components/home/SectionHeader'
@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 function BannerSlider({ banners }) {
   const [current, setCurrent] = useState(0)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (banners.length <= 1) return
@@ -21,49 +22,45 @@ function BannerSlider({ banners }) {
 
   if (!banners.length) return null
 
+  const banner = banners[current]
+
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl" style={{ height: '400px' }}>
-      {banners.map((banner, i) => (
-        <div key={banner.id}
+    <div className="relative w-full overflow-hidden rounded-2xl cursor-pointer" style={{ height: '400px' }}
+      onClick={() => banner.link && navigate(banner.link)}>
+      {banners.map((b, i) => (
+        <div key={b.id}
           className={`absolute inset-0 transition-opacity duration-700 ${i === current ? 'opacity-100' : 'opacity-0'}`}>
-          {banner.image_url
-            ? <img src={banner.image_url} className="w-full h-full object-cover" alt={banner.title}/>
-            : <div className="w-full h-full bg-gradient-to-br from-brand-500 to-brand-800 flex items-center justify-center">
-                <div className="text-center text-white p-8">
-                  <h2 className="font-display font-black text-4xl mb-3">{banner.title}</h2>
-                  <p className="text-xl text-white/80 mb-6">{banner.subtitle}</p>
-                  {banner.link && <Link to={banner.link} className="bg-white text-brand-500 font-bold px-8 py-3 rounded-xl hover:bg-white/90 transition-colors">Shop Now</Link>}
-                </div>
-              </div>
+          {b.image_url
+            ? <img src={b.image_url} className="w-full h-full object-cover" alt={b.title}/>
+            : <div className="w-full h-full bg-gradient-to-br from-brand-500 to-brand-800"/>
           }
-          {/* Overlay text on image */}
-          {banner.image_url && (banner.title || banner.subtitle) && (
+          {/* Show text only if title exists */}
+          {(b.title || b.subtitle) && (
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="text-center text-white p-8">
-                {banner.title && <h2 className="font-display font-black text-4xl mb-3 drop-shadow-lg">{banner.title}</h2>}
-                {banner.subtitle && <p className="text-xl text-white/90 mb-6 drop-shadow">{banner.subtitle}</p>}
-                {banner.link && <Link to={banner.link} className="bg-white text-brand-500 font-bold px-8 py-3 rounded-xl hover:bg-white/90 transition-colors">Shop Now</Link>}
+                {b.title && <h2 className="font-display font-black text-4xl mb-3 drop-shadow-lg">{b.title}</h2>}
+                {b.subtitle && <p className="text-xl text-white/90 mb-4 drop-shadow">{b.subtitle}</p>}
               </div>
             </div>
           )}
         </div>
       ))}
 
-      {/* Navigation arrows */}
+      {/* Arrows */}
       {banners.length > 1 && (
         <>
-          <button onClick={() => setCurrent(c => (c - 1 + banners.length) % banners.length)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all">
+          <button onClick={e => { e.stopPropagation(); setCurrent(c => (c - 1 + banners.length) % banners.length) }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all z-10">
             <ChevronLeft size={20} className="text-gray-800"/>
           </button>
-          <button onClick={() => setCurrent(c => (c + 1) % banners.length)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all">
+          <button onClick={e => { e.stopPropagation(); setCurrent(c => (c + 1) % banners.length) }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all z-10">
             <ChevronRight size={20} className="text-gray-800"/>
           </button>
           {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {banners.map((_, i) => (
-              <button key={i} onClick={() => setCurrent(i)}
+              <button key={i} onClick={e => { e.stopPropagation(); setCurrent(i) }}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? 'bg-white scale-125' : 'bg-white/50'}`}/>
             ))}
           </div>
@@ -84,12 +81,11 @@ export default function Home() {
     bannerService.getActive().then(setBanners).catch(() => {})
   }, [])
 
-  // Filter hero banners
   const heroBanners = banners.filter(b => b.type === 'Hero Slider' || !b.type)
+  const offerBanners = banners.filter(b => b.type === 'Offer Banner')
 
   return (
     <>
-      {/* Show banner slider if banners exist, else show default hero */}
       {heroBanners.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6">
           <BannerSlider banners={heroBanners}/>
@@ -102,48 +98,39 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6">
 
-        {/* Offer Banners from DB */}
-        {banners.filter(b => b.type === 'Offer Banner').length > 0 && (
-          <section className="py-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {banners.filter(b => b.type === 'Offer Banner').slice(0,3).map(b => (
+        {/* Offer Banners */}
+        <section className="py-14">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {offerBanners.length > 0
+              ? offerBanners.slice(0,3).map(b => (
                 <Link key={b.id} to={b.link||'/shop'}
                   className="relative flex flex-col justify-between p-7 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800 h-44 overflow-hidden cursor-pointer hover:-translate-y-1 transition-transform">
-                  {b.image_url && <img src={b.image_url} className="absolute inset-0 w-full h-full object-cover opacity-40" alt={b.title}/>}
+                  {b.image_url && <img src={b.image_url} className="absolute inset-0 w-full h-full object-cover opacity-50" alt={b.title}/>}
                   <div className="relative z-10">
                     <h3 className="font-display font-bold text-2xl text-white leading-tight">{b.title}</h3>
-                    <p className="text-sm text-white/80 mt-1">{b.subtitle}</p>
+                    {b.subtitle && <p className="text-sm text-white/80 mt-1">{b.subtitle}</p>}
                   </div>
                   <span className="inline-flex items-center text-white text-sm font-semibold bg-white/20 rounded-xl px-4 py-2 w-fit relative z-10">Shop Now →</span>
                 </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Default offer banners if none in DB */}
-        {banners.filter(b => b.type === 'Offer Banner').length === 0 && (
-          <section className="py-14">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[
-                {title:'Up to 50% Off',sub:'On all smart gadgets',tag:'Limited Time',link:'/shop',bg:'from-brand-500 to-blue-600',icon:'⚡'},
-                {title:'Premium Audio',sub:'New headphone collection',tag:'New Launch',link:'/shop?category=headphones',bg:'from-purple-600 to-pink-600',icon:'🎧'},
-                {title:'Smart Wearables',sub:'Watches & fitness bands',tag:'Best Sellers',link:'/shop?category=smartwatch',bg:'from-orange-500 to-amber-500',icon:'⌚'},
+              ))
+              : [
+                {title:'Up to 50% Off',sub:'On all smart gadgets',link:'/shop',bg:'from-brand-500 to-blue-600',icon:'⚡'},
+                {title:'Premium Audio',sub:'New headphone collection',link:'/shop',bg:'from-purple-600 to-pink-600',icon:'🎧'},
+                {title:'Smart Wearables',sub:'Watches & fitness bands',link:'/shop',bg:'from-orange-500 to-amber-500',icon:'⌚'},
               ].map(o=>(
                 <Link key={o.title} to={o.link}
                   className={`relative flex flex-col justify-between p-7 rounded-2xl bg-gradient-to-br ${o.bg} h-44 overflow-hidden cursor-pointer hover:-translate-y-1 transition-transform`}>
                   <div className="relative z-10">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1 block">{o.tag}</span>
                     <h3 className="font-display font-bold text-2xl text-white leading-tight">{o.title}</h3>
                     <p className="text-sm text-white/80 mt-1">{o.sub}</p>
                   </div>
                   <span className="inline-flex items-center text-white text-sm font-semibold bg-white/20 rounded-xl px-4 py-2 w-fit relative z-10">Shop Now →</span>
                   <span className="absolute right-5 bottom-5 text-5xl opacity-20 select-none">{o.icon}</span>
                 </Link>
-              ))}
-            </div>
-          </section>
-        )}
+              ))
+            }
+          </div>
+        </section>
 
         {/* Categories */}
         <section className="pb-14">
@@ -179,7 +166,7 @@ export default function Home() {
 
         {/* Testimonials */}
         <section className="pb-16">
-          <SectionHeader eyebrow="What They Say" title="Customer Reviews" subtitle="Trusted by 12,000+ happy shoppers across India"/>
+          <SectionHeader eyebrow="What They Say" title="Customer Reviews"/>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {name:'Rahul K.',loc:'Mumbai, MH',rating:5,text:'Shionix delivered in 2 days! The headphones are absolutely amazing — worth every rupee.'},
