@@ -41,7 +41,7 @@ export default function AdminBanners() {
   const [deleteId, setDeleteId] = useState(null)
   const [preview, setPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
-  const { register, handleSubmit, reset, watch } = useForm()
+  const { register, handleSubmit, reset } = useForm()
 
   const { data: banners = [], isLoading } = useQuery({
     queryKey: ['admin-banners'],
@@ -67,7 +67,7 @@ export default function AdminBanners() {
     onSuccess: () => qc.invalidateQueries(['admin-banners']),
   })
 
-  const openAdd = () => { setEditItem(null); setPreview(null); reset({ type: 'Hero Slider', link: '/shop' }); setModalOpen(true) }
+  const openAdd = () => { setEditItem(null); setPreview(null); reset({ type: 'Hero Slider', link: '/shop', title: '' }); setModalOpen(true) }
   const openEdit = (b) => { setEditItem(b); setPreview(b.image_url); reset(b); setModalOpen(true) }
 
   const handleImg = async (e) => {
@@ -84,7 +84,7 @@ export default function AdminBanners() {
 
   const onSubmit = (data) => {
     const payload = {
-      title: data.title,
+      title: data.title || '',
       subtitle: data.subtitle || '',
       type: data.type || 'Hero Slider',
       link: data.link || '/shop',
@@ -115,7 +115,7 @@ export default function AdminBanners() {
               <div className="aspect-video relative bg-gradient-to-br from-brand-500 to-brand-800 flex items-center justify-center">
                 {b.image_url && <img src={b.image_url} className="w-full h-full object-cover absolute inset-0" alt={b.title}/>}
                 <div className="relative z-10 text-center p-6">
-                  <p className="text-white font-black text-xl mb-1 drop-shadow-lg">{b.title}</p>
+                  {b.title && <p className="text-white font-black text-xl mb-1 drop-shadow-lg">{b.title}</p>}
                   {b.subtitle && <p className="text-white/80 text-sm drop-shadow">{b.subtitle}</p>}
                 </div>
                 {!b.active && (
@@ -145,14 +145,17 @@ export default function AdminBanners() {
             <div className={`aspect-video bg-[var(--bg3)] rounded-xl border-2 border-dashed border-[var(--border)] hover:border-brand-500 flex items-center justify-center overflow-hidden transition-colors ${uploading ? 'opacity-60' : ''}`}>
               {preview
                 ? <img src={preview} className="w-full h-full object-cover" alt=""/>
-                : <div className="text-center text-[var(--text3)]"><Upload size={24} className="mx-auto mb-2"/><span className="text-sm">{uploading ? 'Uploading…' : 'Click to upload banner image'}</span></div>
+                : <div className="text-center text-[var(--text3)]">
+                    <Upload size={24} className="mx-auto mb-2"/>
+                    <span className="text-sm">{uploading ? 'Uploading…' : 'Click to upload banner image'}</span>
+                  </div>
               }
             </div>
             <input type="file" accept="image/*" className="sr-only" onChange={handleImg} disabled={uploading}/>
           </label>
 
-          <Input label="Title *" placeholder="e.g. 50% Off Sale" {...register('title', { required: true })}/>
-          <Input label="Subtitle" placeholder="e.g. Limited time offer" {...register('subtitle')}/>
+          <Input label="Title (optional — khali chod sakte ho)" placeholder="e.g. 50% Off Sale" {...register('title')}/>
+          <Input label="Subtitle (optional)" placeholder="e.g. Limited time offer" {...register('subtitle')}/>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -162,6 +165,12 @@ export default function AdminBanners() {
               </select>
             </div>
             <Input label="Link URL" placeholder="/shop" {...register('link')}/>
+          </div>
+
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <p className="text-xs text-blue-700 dark:text-blue-400">
+              💡 Title aur Subtitle khali chod sakte ho — sirf image dikhegi aur click pe link pe jaayega!
+            </p>
           </div>
 
           <div className="flex gap-3 justify-end">
