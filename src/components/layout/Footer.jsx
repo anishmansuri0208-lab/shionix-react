@@ -70,7 +70,7 @@ export default function Footer({ settings = {} }) {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={15} className="text-brand-500 mt-0.5 flex-shrink-0"/>
-                <span className="text-sm text-[var(--text3)]">{settings.address || 'Bangalore, Karnataka, India'}</span>
+                <span className="text-sm text-[var(--text3)]">{settings.address || 'Gujarat, India'}</span>
               </li>
             </ul>
           </div>
