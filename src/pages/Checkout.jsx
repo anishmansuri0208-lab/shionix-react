@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 import { orderService } from '@/services/orderService'
 import { formatPrice, generateOrderId } from '@/utils/formatters'
 import { FREE_SHIPPING_ABOVE, SHIPPING_CHARGE } from '@/utils/constants'
+import { createShiprocketOrder } from '@/services/shiprocketService'
 import Input from '@/components/ui/Input'
 import toast from 'react-hot-toast'
 
@@ -36,16 +37,46 @@ export default function Checkout() {
     setLoading(true)
     try {
       const orderId = generateOrderId()
-      const order = await orderService.create({
-        id: orderId, customer_id: user?.id||null,
-        customer_name: data.name, customer_email: data.email, customer_phone: data.phone,
-        address: data.address, city: data.city, state: data.state, pin_code: data.pin,
-        items: JSON.stringify(items.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty}))),
-        subtotal, shipping, discount, total_amount: total, status:'pending', payment_method: data.payment,
-      })
+      const orderPayload = {
+        id: orderId,
+        customer_id: user?.id||null,
+        customer_name: data.name,
+        customer_email: data.email,
+        customer_phone: data.phone,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        pin_code: data.pin,
+        items: JSON.stringify(items.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty,sku:i.sku||i.id}))),
+        subtotal,
+        shipping,
+        discount,
+        total_amount: total,
+        status: 'pending',
+        payment_method: data.payment,
+      }
+
+      // Save to Supabase
+      const order = await orderService.create(orderPayload)
+      toast.success('Order placed! 🎉')
+
+      // Auto-create on Shiprocket
+      try {
+        await createShiprocketOrder({...orderPayload, ...order})
+        toast.success('Shipment created on Shiprocket! 🚚')
+      } catch (srErr) {
+        console.error('Shiprocket failed:', srErr)
+        // Don't fail order if Shiprocket fails
+        toast('Order saved! Shiprocket sync pending.', { icon: '⚠️' })
+      }
+
       clear()
-      setOrderDone({...order, payLabel: PAYMENT_LABELS[data.payment], address:`${data.city}, ${data.state} – ${data.pin}`})
-      toast.success('Order placed successfully! 🎉')
+      setOrderDone({
+        ...order,
+        payLabel: PAYMENT_LABELS[data.payment],
+        address: `${data.city}, ${data.state} – ${data.pin}`
+      })
+
     } catch { toast.error('Failed to place order. Please try again.') }
     finally { setLoading(false) }
   }
@@ -58,8 +89,18 @@ export default function Checkout() {
       <h1 className="font-display font-black text-3xl mb-3">Order Placed! 🎉</h1>
       <p className="text-[var(--text2)] mb-8">Thank you, <strong>{orderDone.customer_name}</strong>! Your order will be dispatched soon.</p>
       <div className="card p-5 text-left space-y-3 mb-8">
-        {[['Order ID',`#${orderDone.id}`,'text-brand-500 font-mono font-bold'],['Items',`${itemCount} item${itemCount>1?'s':''}`,''],['Deliver to',orderDone.address,''],['Payment',orderDone.payLabel,''],['Total Paid',formatPrice(total),'text-brand-500 font-bold'],['Delivery','2–5 Business Days','text-green-500']].map(([k,v,cls])=>(
-          <div key={k} className="flex justify-between text-sm"><span className="text-[var(--text3)]">{k}</span><span className={`font-medium text-right max-w-[220px] ${cls}`}>{v}</span></div>
+        {[
+          ['Order ID', `#${orderDone.id}`, 'text-brand-500 font-mono font-bold'],
+          ['Items', `${itemCount} item${itemCount>1?'s':''}`, ''],
+          ['Deliver to', orderDone.address, ''],
+          ['Payment', orderDone.payLabel, ''],
+          ['Total Paid', formatPrice(total), 'text-brand-500 font-bold'],
+          ['Delivery', '2–5 Business Days', 'text-green-500'],
+        ].map(([k,v,cls])=>(
+          <div key={k} className="flex justify-between text-sm">
+            <span className="text-[var(--text3)]">{k}</span>
+            <span className={`font-medium text-right max-w-[220px] ${cls}`}>{v}</span>
+          </div>
         ))}
       </div>
       <div className="flex flex-col gap-3">
@@ -83,7 +124,8 @@ export default function Checkout() {
                 <Input label="Full Name *" placeholder="Rahul Kumar" error={errors.name?.message} {...register('name',{required:'Required'})}/>
                 <Input label="Mobile Number *" placeholder="9876543210" error={errors.phone?.message} {...register('phone',{required:'Required'})}/>
                 <div className="col-span-2"><Input label="Email" placeholder="rahul@email.com" type="email" {...register('email')}/></div>
-                <div className="col-span-2"><label className="block text-sm font-medium text-[var(--text2)] mb-1.5">Complete Address *</label>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-[var(--text2)] mb-1.5">Complete Address *</label>
                   <textarea className={`input resize-none ${errors.address?'border-red-500':''}`} rows={3} placeholder="House No., Street, Area, Landmark..." {...register('address',{required:'Required'})}/>
                   {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
                 </div>
@@ -96,8 +138,12 @@ export default function Checkout() {
             <div className="card p-6">
               <h2 className="font-display font-semibold text-lg mb-5 flex items-center gap-2"><CreditCard size={18} className="text-brand-500"/> Payment Method</h2>
               <div className="space-y-3">
-                {[{v:'cod',e:'💵',l:'Cash on Delivery',d:'Pay in cash when order arrives'},{v:'upi',e:'📱',l:'UPI Payment',d:'PhonePe, GPay, Paytm & more'},{v:'online',e:'💳',l:'Card / Net Banking',d:'All major debit/credit cards'}].map(p=>(
-                  <label key={p.v} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${watch('payment')===p.v?'border-brand-500 bg-brand-500/5':'border-[var(--border)] hover:border-[var(--border)]'}`}>
+                {[
+                  {v:'cod',e:'💵',l:'Cash on Delivery',d:'Pay in cash when order arrives'},
+                  {v:'upi',e:'📱',l:'UPI Payment',d:'PhonePe, GPay, Paytm & more'},
+                  {v:'online',e:'💳',l:'Card / Net Banking',d:'All major debit/credit cards'},
+                ].map(p=>(
+                  <label key={p.v} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${watch('payment')===p.v?'border-brand-500 bg-brand-500/5':'border-[var(--border)] hover:border-brand-500/50'}`}>
                     <input type="radio" value={p.v} {...register('payment')} className="accent-brand-500"/>
                     <span className="text-xl">{p.e}</span>
                     <div><p className="font-semibold text-sm">{p.l}</p><p className="text-xs text-[var(--text3)]">{p.d}</p></div>
@@ -106,6 +152,7 @@ export default function Checkout() {
               </div>
             </div>
           </div>
+
           <div className="card p-6 h-fit sticky top-24">
             <h3 className="font-display font-bold text-lg mb-5">Order Summary</h3>
             <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
@@ -122,9 +169,14 @@ export default function Checkout() {
               <div className="flex justify-between text-[var(--text2)]"><span>Delivery</span><span className={shipping===0?'text-green-500':''}>{shipping===0?'FREE':formatPrice(shipping)}</span></div>
               {discount>0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(discount)}</span></div>}
             </div>
-            <div className="flex justify-between font-black text-lg text-brand-500 border-t border-[var(--border)] pt-4 mb-5"><span>Total</span><span>{formatPrice(total)}</span></div>
+            <div className="flex justify-between font-black text-lg text-brand-500 border-t border-[var(--border)] pt-4 mb-5">
+              <span>Total</span><span>{formatPrice(total)}</span>
+            </div>
             <button type="submit" disabled={loading} className="btn-primary btn w-full justify-center py-4 text-base">
-              {loading?<span className="flex items-center gap-2"><span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"/>Placing…</span>:<><Lock size={16}/> Place Order Securely</>}
+              {loading
+                ? <span className="flex items-center gap-2"><span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"/>Placing…</span>
+                : <><Lock size={16}/> Place Order Securely</>
+              }
             </button>
           </div>
         </div>
