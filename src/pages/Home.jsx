@@ -31,7 +31,7 @@ function BannerSlider({ banners }) {
         <div key={b.id}
           className={`absolute inset-0 transition-opacity duration-700 ${i === current ? 'opacity-100' : 'opacity-0'}`}>
           {b.image_url
-            ? <img src={b.image_url} className="w-full h-full object-contain bg-gradient-to-br from-brand-500 to-brand-800" alt={b.title}/>
+            ? <img src={b.image_url} className="w-full h-full object-cover" alt={b.title}/>
             : <div className="w-full h-full bg-gradient-to-br from-brand-500 to-brand-800"/>
           }
           {/* Show text only if title exists */}
