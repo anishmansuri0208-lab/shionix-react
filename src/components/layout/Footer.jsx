@@ -76,7 +76,7 @@ export default function Footer({ settings = {} }) {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-[var(--border)] mb-8">
-          {[['🚚','Free Delivery','On orders above ₹999'],['↩️','Easy Returns','7-day policy'],['🔒','Secure Payment','100% encrypted']].map(([icon,title,desc])=>(
+          {[['🚚','Free Delivery','On orders above ₹999'],['✅','100% Genuine Products','Authentic items only'],['↩️','Easy Returns','7-day policy'],['🔒','Secure Payment','100% encrypted']].map(([icon,title,desc])=>(
             <div key={title} className="flex items-center gap-3"><span className="text-2xl">{icon}</span><div><p className="text-sm font-semibold">{title}</p><p className="text-xs text-[var(--text3)]">{desc}</p></div></div>
           ))}
         </div>
