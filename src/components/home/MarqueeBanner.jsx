@@ -1,7 +1,7 @@
-import { Truck, Shield, RotateCcw, Zap, Headphones, Award } from 'lucide-react'
+import { Truck, RotateCcw, Zap, Headphones, Award } from 'lucide-react'
 const items = [
-  {icon:Truck,text:'Free Delivery on Orders ₹999+'},{icon:Shield,text:'1 Year Warranty on All Products'},
-  {icon:RotateCcw,text:'Easy 30-Day Returns'},{icon:Zap,text:'Same Day Dispatch'},
+  {icon:Truck,text:'Free Delivery on Orders ₹999+'},
+  {icon:RotateCcw,text:'Easy 7-Day Returns'},{icon:Zap,text:'Same Day Dispatch'},
   {icon:Headphones,text:'24/7 Customer Support'},{icon:Award,text:'100% Genuine Products'},
 ]
 const doubled = [...items,...items]
